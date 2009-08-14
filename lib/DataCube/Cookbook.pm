@@ -11,7 +11,7 @@ __END__;
 
 =head1 NAME
 
-The Blackbear Cookbook - Tips and Tricks for Business Intelligence with DataCube
+Cookbook - Tips and Tricks for Business Intelligence with DataCube
 
 =head1 DESCRIPTION
 
