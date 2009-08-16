@@ -89,7 +89,7 @@ sub end_body {
                 <br />
                 Copyright (C) 2009 by David Williams
                 <br />
-                <div style="font-size:90%;">david@rubiconproject.com</div> 
+                <div style="font-size:90%;">david@gorillamatrix.com</div> 
             </div>
         </h2>
     </body>';

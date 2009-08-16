@@ -30,7 +30,7 @@ I hope they will save you time.
     
             count(column_name)
             
-            count(distinct column_name))
+            count(distinct column_name)
     
     aggregation functions.
 
