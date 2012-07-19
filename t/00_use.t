@@ -1,31 +1,26 @@
 
+use Test::Most;
+
 use Fcntl;
-use strict;
-use warnings;
 use Time::HiRes;
 use Digest::MD5;
 use Data::Dumper;
 
-use Test::More tests => 25;
+use_ok('DataCube');
+use_ok('DataCube::Cube');
+use_ok('DataCube::Cube::Style');
+use_ok('DataCube::Cube::Style::HTML');
+use_ok('DataCube::Cube::Style::HTML::CSS');
+use_ok('DataCube::Schema');
+use_ok('DataCube::FileSplitter');
+use_ok('DataCube::Report::Formatter');
+use_ok('DataCube::FileUtils::CubeMerger');
+use_ok('DataCube::FileUtils::FileReader');
+use_ok('DataCube::FileUtils::FileMerger');
+use_ok('DataCube::FileUtils::TableMerger');
+use_ok('DataCube::Connection');
+use_ok('DataCube::Connection::Table');
 
-use lib 'lib';
-use lib '../lib';
-
-BEGIN {
-    use_ok('DataCube');
-    use_ok('DataCube::Cube');
-    use_ok('DataCube::Cube::Style');
-    use_ok('DataCube::Cube::Style::HTML');
-    use_ok('DataCube::Cube::Style::HTML::CSS');
-    use_ok('DataCube::Schema');
-    use_ok('DataCube::FileSplitter');
-    use_ok('DataCube::Report::Formatter');
-    use_ok('DataCube::FileUtils::FileReader');
-    use_ok('DataCube::FileUtils::FileMerger');
-    use_ok('DataCube::FileUtils::TableMerger');
-    use_ok('DataCube::Connection');
-    use_ok('DataCube::Connection::Table');
-};
 
 unroll_up:
 {
@@ -58,7 +53,7 @@ ok(pp(),'poss_pars');
 ok(tc(),'test_crep');
 ok(th(),'test_chtm');
 
-
+done_testing;
 
 sub tb {
     my $schema = DataCube::Schema->new;
@@ -955,7 +950,6 @@ sub un {
     return 1 unless -d($d);
     unlink_recursive($d);
 }
-
 
 
 

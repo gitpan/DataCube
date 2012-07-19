@@ -47,7 +47,6 @@ sub next_result {
 
 
 
-
 1;
 
 

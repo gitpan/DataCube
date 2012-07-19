@@ -4,7 +4,7 @@
 package DataCube;
 
 use 5.008008;
-our $VERSION = '0.03';
+our $VERSION = '0.01';
 
 use strict;
 use warnings;
@@ -63,6 +63,16 @@ sub new {
     $self->{base_cube} = $self->{cube_store}->{cubes}->{$base_cube_name};
     return $self;
 }
+
+# change to modify:
+# ------------------------------------------------------------------------------
+# DataCube::insert
+# DataCube::reset_measures
+# DataCube::MeasureUpdater::update
+# DataCube::Cube::describe
+# DataCube::Cube::to_table
+# Warehouse::Builder::*
+# ------------------------------------------------------------------------------
 
 sub insert {
     my($self,$data) = @_;
@@ -124,7 +134,7 @@ sub insert {
 
 sub store {
    my($self,$path) = @_;
-   Storable::store($self,$path);
+   Storable::nstore($self,$path);
    return $self;
 }
 
@@ -641,7 +651,16 @@ sub build_lattice_tables {
             $self->{cube_store}->add_cube($cube) and last path_walk
                 if $confine eq $cube->{schema}->{name};
         }
-        
+       
+        if( $schema->{lattice_point_filters} ){
+            my @fields  = split/\t/,$cube->{schema}->{name};
+            my @filters = @{ $schema->{lattice_point_filters} };
+            for( @filters ){
+                next unless ref( $_ ) && ref( $_ ) eq 'CODE';
+                next path_walk if $_->( @fields ) && ! $cube->{is_the_base_table};
+            }
+        }        
+ 
         if( $schema->{asserted_lattice_points} && ref($schema->{asserted_lattice_points}) ){
             $self->{cube_store}->add_cube($cube)
                 if exists
@@ -831,6 +850,23 @@ sub cube_store {
     return $self->{cube_store};    
 }
 
+sub cube_list {
+    my($self) = @_;
+    $self->cube_store->cube_names;
+}
+
+sub cube_names {
+    my($self) = @_;
+    $self->cube_store->cube_names;
+}
+
+sub cubes {
+    my($self) = @_;
+    my @names     = $self->cube_store->cube_names;
+    my $cube_hash = $self->cube_store->cubes; 
+    return map { $cube_hash->{$_} } @names;
+}
+
 sub table_store {
     my($self) = @_;
     return $self->{cube_store};    
@@ -853,10 +889,18 @@ sub schema {
 
 sub tables {
     my($self) = @_;
-    return $self->table_store->tables;
+    return sort keys %{ $self->table_store->tables };
 }
 
+sub table_count {
+    my($self) = @_;
+    return scalar( keys %{ $self->cube_store->cubes } )
+}
 
+sub dmp {
+    use Data::Dumper;
+    print Dumper( \@_ );
+}
 
 
 
@@ -1017,9 +1061,9 @@ DataCube - An Object Oriented Perl Module for Data Mining, Data Warehousing, and
         10/22/2005        US         Jones         Pen        64        8.99      575.36
         2/18/2006         CA         Jones      Binder         4        4.99       19.96
         7/4/2006          CA         Jones      PenSet        61        4.99      304.39
-        7/29/2005         UK        Thrace      Binder        81       19.99     1619.19
-        11/8/2005         UK        Thrace         Pen        12       19.99      239.88
-        12/29/2005        UK        Thrace      PenSet        74       15.99     1183.26
+        7/29/2005         UK         Hogan      Binder        81       19.99     1619.19
+        11/8/2005         UK         Hogan         Pen        12       19.99      239.88
+        12/29/2005        UK         Hogan      PenSet        74       15.99     1183.26
     ';
     
         my @data = map { [ grep { /\S/ } split/\s+/] } grep { /\S/ } split/\n+/,$data;
@@ -1047,12 +1091,18 @@ This module provides several methods to create, store, modify and access DataCub
 
 =head2 Core Methods
 
+=over 2
+
 These methods expose the core DataCube API.
 They are presented in the order in which you will probably want to use them.
 
 All examples below follow the example from the new method.
 
+=back
+
 =head3 new
+
+=over 3
 
 The new constructor should be used with a schema like so:
 
@@ -1072,7 +1122,13 @@ The new constructor should be used with a schema like so:
   
   my $cube = DataCube->new($schema);
 
+
+=back
+
+
 =head3 insert
+
+=over 3
 
 Now that you have a data cube, insert your data, one hashref at a time:
 
@@ -1098,7 +1154,11 @@ Notice that each field from the schema is present and populated by name at inser
 
 DataCube will *not* under any circumstances perform sanity checks for you, ever. 
 
+=back
+
 =head3 load_data_infile
+
+=over 3
 
 The load_data_infile method will batch insert the contents of an entire text file into a cube;
 
@@ -1136,7 +1196,13 @@ Then I can load it into a cube as follows:
     
 Note: it's ok if your text file contains more columns than your schema.
 
+
+=back
+
+
 =head3 rollup
+
+=over 3
 
 The rollup method will perform all the aggregations along all the dimensions and measures specified in your schema.
 
@@ -1144,7 +1210,12 @@ It will happen in memory and very quickly.
 
 This method explodes if the cube has already been rolled up when called.
 
+=back
+
+
 =head3 lazy_rollup
+
+=over 3
 
 The lazy_rollup method will perform all the aggregations along all the dimensions and measures specified in your schema, iteratively, as opposed to all at once.
 
@@ -1157,9 +1228,16 @@ An example use case:
       $next_cube->report($target);
   }
 
+
 The advantage is that far less ram is used and the time it takes to generate the rollups is increased only slightly.
 
+=back
+
+
+
 =head3 commit
+
+=over 3
 
 The commit method  saves your work to disk.
 It will create its own directory tree and will store files using its own internal logic.
@@ -1172,7 +1250,13 @@ Emmited files are binary, not human readable, and should not be modified by anyt
 
 If the commit target exists, it will be updated in place and will reflect all commits to date. 
 
+
+=back
+
+
 =head3 sync
+
+=over 3
 
 The sync method uses the binary files in a commit target to create flat text file reports.
 
@@ -1198,7 +1282,12 @@ In our example, 16 rollup tables will have been created and commited to disk.  T
 
 Before the call to sync is made, the contents of the .report file may not exist or may exist but may not be current.  Be careful.
 
+=back
+
+
 =head3 report
+
+=over 3
 
 The report method creates flat text file reports, in the specified location.
 
@@ -1216,15 +1305,32 @@ If two directories are passed to the report method, then flat text file reports 
 
 Now, the $report_target directory will contain reports which represent the cumulative work in the $commit_target
 
+
+=back
+
+
 =head3 report_html
+
+=over 3
 
 The report_html method is the same as the report method but produces html reports instead of flat text files.  See 'report';
 
+
+
+
+=back
+
 =head2 Access Methods
+
+=over 2
 
 These methods provide basic read / write access to the internal contents of the cube.
 
+=back
+
 =head3 reset
+
+=over 3
 
 The reset method resets the internal state of the cube :
 
@@ -1236,10 +1342,12 @@ This is equivalent to
 
 In other words, the reset method empties the data from all the cubes internal tables.
 
+=back
+
 
 =head3 unroll
 
-
+=over 3
 
 The unroll method reverts the cube to its pre-rollup state and has no effect on unrolled cubes:
 
@@ -1264,13 +1372,13 @@ It is implemented as follows:
         return $self;
     }
 
-
+=back
 
 
 
 =head3 reset_measures
 
-
+=over 3
 
 The reset_measures method allows you to reset all measure values associated with a specific tuple, to their default values.
 Sums are set to 0, products to 1, internal count distinct hashes are reset to {}, etc. 
@@ -1322,12 +1430,12 @@ An example:
 This method explodes if the cube has already been rolled up when called.
 
 
-
+=back
 
 
 =head3 delete
 
-
+=over 3
 
 The delete method removes the index and measures associated with a specific tuple.
 
@@ -1350,14 +1458,14 @@ An example:
 This method explodes if the cube has already been rolled up when called.
 
 
-
+=back
 
 
 
 
 =head3 decrement_key_count
 
-
+=over 3
 
 The decrement_key_count method decreases the unqualified 'count' measure associated with a dimension instance by 1.  
 
@@ -1368,12 +1476,12 @@ An example:
 This method explodes if the cube has already been rolled up when called.
 
 
-
+=back
 
 
 =head3 drop_count / decrement_multi_count
 
-
+=over 3
 
 These methods modify the contents of ('count','field') and ('multi_count','field') measures.
 
@@ -1544,7 +1652,7 @@ Granted, these methods are technical and should be used with great caution.
 These methods explode if the cube has already been rolled up when called.
 
 
-
+=back
 
 
 
@@ -1552,17 +1660,17 @@ These methods explode if the cube has already been rolled up when called.
 
 =head2 Convenience Methods
 
-
+=over 2
 
 These methods provide wrappers around slightly complicated operations.
 They are meant to be sugary and save you development time.
 
-
+=back
 
 
 =head3 lazy_rc
 
-
+=over 3
 
 The lazy_rc method uses an iterative rollup algorithm to rollup and commit the cube.
 It will be more memory efficient and slightly slower than first calling rollup and then calling commit.
@@ -1577,11 +1685,11 @@ lazy_rc will generally use twice as much virtual memory as your perl process did
 (as opposed to n times where n is the number of internal lattice points (ie different rollups)).
 
 
-
+=back
 
 =head3 store / retrieve
 
-
+=over 3
 
 The store and retrieve methods provide ways to store your cube to a single file on disk and slurp it back in later.
 
@@ -1606,12 +1714,12 @@ The new constructor can also take this file path instead of a schema object:
 
 which brings us to:
 
-
+=back
 
 
 =head3 clone
 
-
+=over 3
 
 The clone methods provides a deep copy of a data cube.
 
@@ -1621,7 +1729,7 @@ Example:
     
     # now anything done to $clone does not affect $cube
 
-
+=back
 
 
 
@@ -1629,15 +1737,15 @@ Example:
 
 =head2 Examination Methods
 
-
+=over 2
 
 These methods help you peek inside your cube.
 
-
+=back
 
 =head3 describe
 
-
+=over 3
 
 Its like mysql describe but for data cubes.  Kewl huh.
 
@@ -1661,11 +1769,11 @@ Produces text output.  Try it:
   
   $cube->describe;
 
-
+=back
 
 =head3 get_measures
 
-
+=over 3
 
 The get_measures method provides real-time access to the cube.
 
@@ -1696,11 +1804,11 @@ You can query the cube's base table at insertion time like so:
 For a richer query interface, see query_measures or DataCube::Query;
 For information about measures, see DataCube::Schema;
 
-
+=back
 
 =head3 get_measures_by_id
 
-
+=over 3
 
 The get_measures_by_id method fetches measures associated with a unique record identifier from the base table.
 
@@ -1713,12 +1821,12 @@ The get_measures_by_id method fetches measures associated with a unique record i
 Note: This method only works on the base table.
 
 
-
+=back
 
 
 =head3 query_measures
 
-
+=over 3
 
 The query_measures method provides real-time search for data cubes.
 
@@ -1753,38 +1861,37 @@ Results will be returned as an array of hash references, in the same format
 expected by the $filter callback above.
 
 
-
+=back
 
 
 =head2 Status Methods
 
-
+=over 2
 
 These methods provide infomation about the state of the cube.
 
-
+=back
 
 =head3 has_been_rolled_up
 
-
+=over 3
 
 This method will return true if the cube has been rolled up,  0 otherwise.
 
 Note: lazy_rc does not set the has_been_rolled_up flag to true.
 
 
-
+=back
 
 
 =head1 IMPORTANT 
 
-There are 3 rules for DataCube that must never be broken.
+There are 4 rules for DataCube that must never be broken.
 
-    1.  Your data may not contain the tab character
+    1.  Your data may not contain tab character(s)
     2.  You may not have a dimension called 'overall'  
     3.  All named entries from your schema must exist and be defined at insertion time
-
-Also, if possible, do not use double underscores in the names of dimensions, hierarchies or measure fields.
+    4.  Do not use double underscores in the names of dimensions, hierarchies or measure fields.
 
 Example:
 
@@ -1831,11 +1938,11 @@ This module does not export anything.  It is object oriented.
 
 =head2 ACID Compliance
 
-
+=over 2
 
 The DataCube API provides operations that guarantee reliable transactions.  Please see the blackbear cookbook for details.
 
-
+=back
 
 
 
@@ -1844,18 +1951,28 @@ The DataCube API provides operations that guarantee reliable transactions.  Plea
 =head1 SEE ALSO
 
 
+
 Wikipedia on OLAP Cubes:
 
 http://en.wikipedia.org/wiki/OLAP_cube
 
 
+Other Data Cubing Engines:
+
+=begin html
+<a href="http://www.asterdata.com/">http://www.asterdata.com/</a><br/>
+<a href="http://www.oracle.com/technology/obe/olap_cube/buildicubes.htm">http://www.oracle.com/technology/obe/olap_cube/buildicubes.htm</a><br/>
+<a href="http://www.microsoft.com/sqlserver/2005/en/us/business-intelligence.aspx">http://www.microsoft.com/sqlserver/2005/en/us/business-intelligence.aspx</a><br/>
+
+=end html
+
 =head1 AUTHOR
 
-David Williams, E<lt>david@gorillamatrix.comE<gt>
+David Williams, E<lt>david@namimedia.comE<gt>
 
 =head1 COPYRIGHT AND LICENSE
 
-Copyright (C) 2009 by David Williams
+Copyright (C) 2009-Now by David Williams
 
 This library is free software; you can redistribute it and/or modify
 it under the same terms as Perl itself, either Perl version 5.8.8 or,

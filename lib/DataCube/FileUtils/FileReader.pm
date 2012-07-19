@@ -84,6 +84,50 @@ sub slurp {
 
 
 
-__DATA__
+
+
+
 
 __END__
+
+
+=head1 NAME
+
+DataCube::FileUtils::FileReader - Read tab separated value files with header.
+
+=head1 SYNOPSIS
+
+    use strict;
+    use warnings;
+    use DataCube::FileUtils::FileReader;
+
+    my $file   = 'some_flat_file.tsv';
+
+    my $reader = DataCube::FileUtils::FileReader->new;
+
+    $reader->read($file);
+
+    while($reader->next_line){
+        printf "\tcolumn_a  =>  %s\n",$reader->column_a;
+        printf "\tcolumn_b  =>  %s\n",$reader->column_b;
+        printf "\tcolumn_c  =>  %s\n",$reader->column_c;
+        print '-' x 80,"\n";
+    }
+
+
+
+
+=head1 AUTHOR
+
+David Williams, E<lt>david@namimedia.comE<gt>
+
+=head1 COPYRIGHT AND LICENSE
+
+Copyright (C) 2009 by David Williams
+
+This library is free software; you can redistribute it and/or modify
+it under the same terms as Perl itself, either Perl version 5.8.8 or,
+at your option, any later version of Perl 5 you may have available.
+
+
+=cut

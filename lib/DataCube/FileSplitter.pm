@@ -213,3 +213,63 @@ sub dir {
 
 
 
+
+
+
+__END__
+
+
+### from before the creation of DataCube::MeasureUpdater
+### ----------------------------------------------------------------------------
+
+            merge_file_measure_update:
+            
+            for(@{$schema->{measures}}) {
+                
+                if($_->[0] eq 'key_count'){
+                    next merge_file_measure_update unless exists $small_hunk->{$key}->{key_count};
+                    $big_hunk->{$key}->{key_count} += $small_hunk->{$key}->{key_count};
+                    next merge_file_measure_update;
+                }
+                
+                if($_->[0] eq 'count'){
+                    next merge_file_measure_update unless exists $small_hunk->{$key}->{count}->{$_->[1]}->{workspace};
+                    my $count_field_name = $_->[1];
+                    $big_hunk->{$key}->{count}->{$count_field_name}->{workspace}->{$_} = undef
+                        for keys %{$small_hunk->{$key}->{count}->{$count_field_name}->{workspace}};
+                    next merge_file_measure_update;
+                }
+                  
+                if($_->[0] eq 'multi_count'){
+                    next merge_file_measure_update unless exists $small_hunk->{$key}->{multi_count}->{$_->[1]}->{workspace};
+                    my $multi_count_field_name = $_->[1];
+                    $big_hunk->{$key}->{multi_count}->{$multi_count_field_name}->{workspace}->{$_} += 
+                        $small_hunk->{$key}->{multi_count}->{$multi_count_field_name}->{workspace}->{$_}
+                            for keys %{$small_hunk->{$key}->{multi_count}->{$multi_count_field_name}->{workspace}};
+                    next merge_file_measure_update;
+                }
+                
+                if($_->[0] eq 'sum'){
+                    next merge_file_measure_update unless exists $small_hunk->{$key}->{sum}->{$_->[1]};
+                    $big_hunk->{$key}->{sum}->{$_->[1]} += $small_hunk->{$key}->{sum}->{$_->[1]};
+                    next merge_file_measure_update;
+                }
+                
+                if($_->[0] eq 'product'){
+                    next merge_file_measure_update unless exists $small_hunk->{$key}->{product}->{$_->[1]};
+                    $big_hunk->{$key}->{product}->{$_->[1]} *= $small_hunk->{$key}->{product}->{$_->[1]};
+                    next merge_file_measure_update;
+                }
+                
+                if($_->[0] eq 'average'){
+                    next merge_file_measure_update unless exists $small_hunk->{$key}->{average}->{$_->[1]}->{workspace}->{sum_total};
+                    $big_hunk->{$key}->{average}->{$_->[1]}->{workspace}->{sum_total} += 
+                        $small_hunk->{$key}->{average}->{$_->[1]}->{workspace}->{sum_total};
+                    $big_hunk->{$key}->{average}->{$_->[1]}->{workspace}->{observations} += 
+                        $small_hunk->{$key}->{average}->{$_->[1]}->{workspace}->{observations};
+                    next merge_file_measure_update;
+                }
+            }
+            
+        }
+        

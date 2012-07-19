@@ -11,7 +11,7 @@ __END__;
 
 =head1 NAME
 
-Cookbook - Tips and Tricks for Business Intelligence with DataCube
+The Blackbear Cookbook - Tips and Tricks for Business Intelligence with DataCube
 
 =head1 DESCRIPTION
 
@@ -30,7 +30,7 @@ I hope they will save you time.
     
             count(column_name)
             
-            count(distinct column_name)
+            count(distinct column_name))
     
     aggregation functions.
 
@@ -304,7 +304,7 @@ I hope they will save you time.
 
 =head1 AUTHOR
 
-David Williams, E<lt>david@gorillamatrix.comE<gt>
+David Williams, E<lt>david@namimedia.comE<gt>
 
 =head1 COPYRIGHT AND LICENSE
 
@@ -316,5 +316,3 @@ at your option, any later version of Perl 5 you may have available.
 
 
 =cut
-
-

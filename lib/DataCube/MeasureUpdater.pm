@@ -35,14 +35,12 @@ sub update {
     my $source_key = $opts{source_key};
     my $target_key = $opts{target_key};
 
-    # uncomment this is you want gnarly checking
-    
-    # local $SIG{__WARN__} = sub {
+    #local $SIG{__WARN__} = sub {
     #    die '-' x 80 . "\n" .
     #        "DataCube::MeasureUpdater(update | warnings):\n".
     #        "caught a fatal exception here:\n$_[0]\n" . '-' x 80 . "\n" .
     #        join("\n", "source_key:   $source_key", "target_key:   $target_key") . '-' x 80 . "\n";
-    # };
+    #};
 
     update:
     for(@{$self->{measures}}) {
@@ -152,5 +150,8 @@ sub update {
 
 
 
-1;
 
+
+
+
+1;

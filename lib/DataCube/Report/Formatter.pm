@@ -46,93 +46,17 @@ sub fcon {
 
 
 
-
 1;
 
 
 
 __DATA__
 
-#date=yyyymmdd
-#with by month #'s as yyyymm01
-
-#uniques_bysite:
-#"date","site_id","country_id","imps","uniques"
-#
-#uniques_bychannel:
-#"date","country_id","channel_id","imps","uniques"
-#
-#uniques
-#"date","country_id","imps","uniques"
-#
-#uniques_bysize
-#"date","size_id","country_id","imps","uniques"
-#
-#uniques_bysitesize
-#"date","site_id","size_id","country_id","imps","uniques"
-#
-#uniques_bynetwork
-#"date","network_id","country_id","imps","uniques"
-#
-#uniques_bynetworksitesize
-#"date","network_id","site_id","size_id","country_id","imps","uniques"
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 __END__
-# Below is stub documentation for your module. You'd better edit it!
-
-=head1 NAME
-
-Rubicon - Perl extension for blah blah blah
-
-=head1 SYNOPSIS
-
-  use Rubicon;
-  blah blah blah
-
-=head1 DESCRIPTION
-
-Stub documentation for Rubicon, created by h2xs. It looks like the
-author of the extension was negligent enough to leave the stub
-unedited.
-
-Blah blah blah.
-
-=head2 EXPORT
-
-None by default.
-
-
-
-=head1 SEE ALSO
-
-Mention other useful documentation such as the documentation of
-related modules or operating system documentation (such as man pages
-in UNIX), or any relevant external documentation such as RFCs or
-standards.
-
-If you have a mailing list set up for your module, mention it here.
-
-If you have a web site set up for your module, mention it here.
 
 =head1 AUTHOR
 
-David Williams, E<lt>david@E<gt>
+David Williams, E<lt>david@namimedia.comE<gt>
 
 =head1 COPYRIGHT AND LICENSE
 

@@ -345,6 +345,59 @@ sub to_table {
     return wantarray ? @$table : $table;
 }
 
+sub tsv_data {
+    my( $self ) = @_;
+    my @measures = $self->schema->measures; 
+    for(@measures){ $_->[2] = 'count' if $_->[0] eq 'key_count' }
+    @measures  = sort { $a->[2] cmp $b->[2] }  @measures;
+    my $data   = $self->{cube};
+    my @keys   = keys %$data;
+    my @results;
+    for my $key( @keys ){
+        my @measure_values = $self->get_measure_values( $key, \@measures );
+        push @results, join("\t", $key, join("\t", @measure_values));
+    }
+    return @results;
+}
+
+sub get_measure_values {
+    my( $self, $key, $measures ) = @_;
+    my @measures = @$measures;
+    my @results;
+    for( @measures ){      
+        if($_->[0] eq 'key_count'){
+            push @results, $self->{cube}->{$key}->{key_count};
+            next;
+        }
+        if($_->[0] eq 'count'){
+            push @results, scalar(keys %{$self->{cube}->{$key}->{count}->{$_->[1]}});
+            next;
+        }
+        if($_->[0] eq 'multi_count'){
+            push @results, scalar(keys %{$self->{cube}->{$key}->{multi_count}->{$_->[1]}});
+            next;
+        }
+        if($_->[0] eq 'sum'){
+            push @results, $self->{cube}->{$key}->{sum}->{$_->[1]};
+            next;
+        }
+        if($_->[0] eq 'min'){
+            push @results, $self->{cube}->{$key}->{min}->{$_->[1]};
+            next;
+        }
+        if($_->[0] eq 'max'){
+            push @results, $self->{cube}->{$key}->{max}->{$_->[1]};
+            next;
+        }
+        if($_->[0] eq 'average'){
+            push @results, $self->{cube}->{$key}->{average}->{$_->[1]}->{sum_total} / 
+                           $self->{cube}->{$key}->{average}->{$_->[1]}->{observations};
+            next;
+        }
+    }
+    return @results;
+}
+
 sub cube {
     my($self) = @_;
     return $self->{cube}
@@ -388,6 +441,18 @@ sub is_the_base_table {
 
 
 1;
+
+
+
+
+
+__DATA__
+
+
+
+__END__
+
+
 
 
 

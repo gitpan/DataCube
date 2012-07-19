@@ -11,10 +11,9 @@ sub new {
     bless {%opts}, ref($class) || $class;
 }
 
-sub list_cubes {
+sub cube_names {
     my($self) = @_;
-    print "$_\n" for sort keys %{$self->{cubes}};
-    return $self;
+    sort keys %{$self->{cubes}};
 }
 
 sub fetch {

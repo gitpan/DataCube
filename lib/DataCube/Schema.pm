@@ -54,6 +54,16 @@ sub initialize {
     return $self;
 }
 
+sub columns {
+    my($self) = @_;
+    return $self->fields, $self->measure_names
+}
+
+sub measure_names {
+    my($self) = @_;
+    map { $_->[2] } $self->measures
+}
+
 sub confine_to {
     my($self,@fields) = @_;
     $self->{confine_to} = join("\t",sort @fields);
@@ -128,6 +138,11 @@ sub suppress_lattice_point {
     $self->{suppressed_lattice_points}->{$point} = undef;
 }
 
+sub filter_lattice_point {
+    my( $self, $code ) = @_;
+    push @{ $self->{lattice_point_filters} }, $code; 
+}
+
 sub assert_lattice_point {
     my($self,@point,%point,$name) = @_;
     assert_opts:{
@@ -153,7 +168,7 @@ sub is_initialized {
 
 sub measures {
     my($self) = @_;
-    return wantarray ? @{$self->{measures}} : $self->{measures}
+    @{$self->{measures}}
 }
 
 sub hierarchies {
@@ -163,7 +178,7 @@ sub hierarchies {
 
 sub field_names {
     my($self) = @_;
-    return wantarray ? sort keys %{$self->{field_names}} : $self->{field_names}
+    sort keys %{$self->{field_names}}
 }
 
 sub fields {
@@ -210,7 +225,25 @@ sub safe_file_name {
     return $file_name;
 }
 
+sub pg_types {
+    my($self) = @_;
+    
+    my %types;
 
+    for( $self->fields ) {
+        $types{ $_ } = 'text'
+    }
+
+    for( $self->measures ) {
+        if( $_->[0] eq 'sum' ) {
+            $types{ $_->[2] } = 'numeric not null';
+            next
+        }
+        die "Measure $_->[0] not yet implemented in pg_types";
+    }
+    
+    %types;
+}
 
 
 
@@ -293,7 +326,6 @@ sub check_conflicts {
 
 
 
-
 1;
 
 
@@ -355,17 +387,28 @@ It is self contained and ready to use in data mining and data warehousing applic
 
 All schemas created by this module are Snowflake Schemas.
 
+
 =head2 BACKGROUND
+
 
 Star and Snowflake Schemas are used to organize dimensions and measurements in Data Warehouses.
 Snowflake Schemas encompass all the functionality of Star Schemas, and provide direct support for hierarchies. 
 
+
+
 =head2 STAR SCHEMAS
+
+=over 2
 
 In a Star Schema, many peripheral tables of data are joined to one central table called the E<quot>Fact TableE<quot>.
 Each peripheral table represents a single dimension.
 
+=back
+
+
 =head2 SNOWFLAKE SCHEMAS
+
+=over 2
 
 The Snowflake Schema is an extension of the Star Schema, in which each peripheral E<quot>Dimension TableE<quot> holding
 hierarchical data is replaced by a group of tables representing that hierarchy.
@@ -374,7 +417,13 @@ To illustrate the difference, consider a single table in a Star Schema which con
 In a Snowflake Schema, this table would be replaced by 3 tables:  one containg the year, one containing the month, and one containing the day,
 all linked together by a primary key / foreign key relationship.
 
+
+=back
+
+
 =head2 FACT TABLES
+
+=over 2
 
 A special table called the E<quot>Fact TableE<quot> resides in the middle of both Star and Snowflake Schemas.
 Fact Tables contain a single row of data for each factual event logged during the course of business.
@@ -385,15 +434,30 @@ They should be used, however, to design E<quot>Dimensional DatabasesE<quot> and 
 where such redundancy allows for extreme performance gains for complex sql queries,
 especially those containing aggregation functions on hierarchical relationships.
 
+=back
+
+
+
+
 =head1 BASIC OPERATIONS
+
 
 This module provides several methods to design Snowflake Schemas. 
 
+
+
 =head3 add_dimension
+
+=over 3
 
 This method adds a single dimension to a schema.  
 
+=back
+
+
 =head3 add_measure
+
+=over 3
 
 This method adds a single measures to the cubes measure table.
 
@@ -409,6 +473,7 @@ Supported measures inlcude:
     multi_count [field name]
 
 Here is a description of each measure:
+
 
     count
     
@@ -497,9 +562,13 @@ Here is a description of each measure:
     declaration    $schema->add_measure('multi_count','field')
     description    the count distinct of inserted values from 'field', also stores the *number of times* that $field_value was 'uniquefied'
 
+=back
+
 
 =head3 add_hierarchy
 
+
+=over 3
 
 This method adds a single hierarchy to a schema.  Hierarchies are like Dimensions, except that aggregate measures will be computed on complete Parent - Child chains.
 
@@ -532,7 +601,18 @@ will create the following reports:
 
 as it probably should.
 
+
+=back
+
+
+
+
 =head1 ADVANCED OPERATIONS
+
+
+=over 3
+
+=back
 
 =head3 add_strict_dimension
 
@@ -564,11 +644,28 @@ will create the following reports:
 
 Notice that the datacube did not produce the sum_of_dollars irrespective of country.
 
+
+=over 3
+
+=back
+
+
+
 =head3 add_strict_hierarchy
+
 
 This method adds a single hierarchy to a schema.  No aggregation will be performed over the top-most dimension. 
 
+=over 3
+
+=back
+
+
+
+
 =head3 suppress_lattice_point
+
+=over 3
 
 This method suppresses specific rollups / reports from being created during a call to rollup, which may lead to a saving of both time and space.
 
@@ -589,13 +686,21 @@ For example, consider the following code:
   $cube->rollup;
   $cube->report;
 
+
 will create the following reports:
 
   1.  sum_of_dollars
   2.  sum_of_dollars by year
   3.  sum_of_dollars by year, month, day 
 
+
+
+
+=back
+
 =head3 assert_lattice_point
+
+=over 3
 
 This method restricts a datacube to only the specified list of dimensions during rollup.
 
@@ -619,6 +724,7 @@ For example, consider the following code:
 
   $cube->rollup;
   $cube->report;
+
 
 will create the following reports:
 
@@ -645,8 +751,13 @@ confines 'year' to always be present.
 
 When in doubt, do not use 'assert_lattice_point' in the presence of the other lattice assertions (such as 'strict' and 'suppress'). 
 
+=back
+
+
 
 =head3 confine_to
+
+=over 3
 
 This method restricts a datacube to only the specified list of dimensions and superscedes all other methods.
 
@@ -674,19 +785,26 @@ will create a cube with only one table (the base table: 'country','product','yea
 
   1.  sum_of_dollars etc. by country, product, year
 
+=back
+
+
+
 =head1 EXPORT
 
-This module does not export anything.  It is object oriented.
+None
 
 =head1 SEE ALSO
+
+
 
 Wikipedia on Snowflake Schema:
 
 http://en.wikipedia.org/wiki/Snowflake_schema
 
+
 =head1 AUTHOR
 
-David Williams, E<lt>david@gorillamatrix.comE<gt>
+David Williams, E<lt>david@namimedia.comE<gt>
 
 =head1 COPYRIGHT AND LICENSE
 

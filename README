@@ -1,49 +1,21 @@
-DataCube version 0.03
+DataCube version 0.01
 =====================
-
 
 INSTALLATION
 
-Open a terminal and change directory into blackbear/trunk/build.
-You may need sudo priveleges during the 'make install' step of installation.
+To install this module type the following:
 
-After changing your working directory, simply type:
-
-perl install.pl
-
-The amount of unit testing involved is serious, checking everything from file system operations to numerical stability.
-Installation may take up to one minute.  If you do not wish to wait, you may type
-
-perl install.pl --test=0
-
-Windows users, you are on your own.  Just copy the files where you need them to go.
-I do not intend to support Microsoft's insane policies toward the "make" utility.
-
-
-
-DEPENDENCIES
-
-The only prerequisite to install blackbear is a working copy of perl, version 5.8.x or higher.
-
-
-
-FROM THE AUTHOR
-
-I wrote this with a philosophy in mind:  That using software should make you feel good, loved and empowered.
-So from data hobbyists to mysterious specialists, use it and be well.
-Contact me with any questions you might have.  Happy Hunting!
-
-This is a fresh refactoring of Blackbear Version 1.
-Please contact me with feature requests or bug reports as you see fit.
-
-
+   perl Makefile.PL
+   make
+   make test
+   make install
 
 COPYRIGHT AND LICENCE
 
-Copyright (C) 2009 by David Williams
-
-david@gorillamatrix.com
+Copyright (C) 2009-now by David Williams <david@namimedia.com>
 
 This library is free software; you can redistribute it and/or modify
 it under the same terms as Perl itself, either Perl version 5.8.8 or,
 at your option, any later version of Perl 5 you may have available.
+
+
