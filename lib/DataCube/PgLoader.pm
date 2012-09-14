@@ -7,6 +7,7 @@ use Carp qw| confess |;
 use Time::HiRes qw| time |;
 use Storable qw| retrieve |;
 use Digest::MD5 qw| md5_hex |;
+use Sys::Hostname;
 
 has columns         => (is => 'ro', isa => 'ArrayRef[Str]', lazy_build => 1);
 has dbi             => (is => 'ro', isa => 'DBIx::Connector', lazy_build => 1);
@@ -126,7 +127,7 @@ sub _build_merge_sql {
 
 sub _build_temp_table {
     my( $self ) = @_;
-    'fact_' . md5_hex(join('__',  $self->schema->fields, time()))
+    'fact_' . md5_hex(join('__',  $self->schema->fields, time() . rand() . $$ . hostname()));
 }
 
 sub _build_types {

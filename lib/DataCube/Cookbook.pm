@@ -11,15 +11,13 @@ __END__;
 
 =head1 NAME
 
-The Blackbear Cookbook - Tips and Tricks for Business Intelligence with DataCube
+Cookbook - Tips and Tricks for Business Intelligence with DataCube
 
 =head1 DESCRIPTION
 
 This document contains a collection of practical techniques for accomplishing large scale Business Intelligence tasks with DataCube. These techniques are what I am using at the moment. Feel free to use them, hack them, turn them inside out and do it again.
 
 I hope they will save you time.
-
-
 
 
 =head2 Emulating SQL functions
