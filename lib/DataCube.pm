@@ -4,7 +4,7 @@
 package DataCube;
 
 use 5.008008;
-our $VERSION = '1.01';
+our $VERSION = '0.01';
 
 use strict;
 use warnings;
